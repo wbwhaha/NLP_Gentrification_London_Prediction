@@ -1,5 +1,4 @@
 import torch
-
 from torch import nn
 from torch_geometric.nn import GCNConv
 import torch.nn.functional as F
@@ -40,8 +39,9 @@ class GentrificationGCN_LSTM(nn.Module):
         x = lstm_out[:, -1, :]          # Take the last time step as the semantic evolution feature [n_lsoa, lstm_hidden]
 
         # GCN over spatial structure
-        x = F.relu(self.gcn1(x, edge_index, edge_weight))
+        x = self.gcn1(x, edge_index, edge_weight)
+        x = F.relu(x)
         x = self.gcn2(x, edge_index, edge_weight)
-
+        
         # Classifier
         return self.classifier(x)
