@@ -14,11 +14,14 @@ class GentrificationGCN_LSTM(nn.Module):
             batch_first=True
         )
 
-        # GCN over spatial graph of LSOAs
+        # GCN layers over spatial graph
         self.gcn1 = GCNConv(lstm_hidden, gcn_hidden)
-        self.gcn2 = GCNConv(gcn_hidden, gcn_hidden)
+        self.bn1 = nn.BatchNorm1d(gcn_hidden)  # BatchNorm after first GCN
 
-        # Classifier
+        self.gcn2 = GCNConv(gcn_hidden, gcn_hidden)
+        self.bn2 = nn.BatchNorm1d(gcn_hidden)  # BatchNorm after second GCN
+
+        # MLP Classifier
         self.classifier = nn.Sequential(
             nn.ReLU(),
             nn.Dropout(dropout_rate),
@@ -34,14 +37,19 @@ class GentrificationGCN_LSTM(nn.Module):
         edge_weight: Edge weights (e.g. shared boundary length)
         """
 
-        # LSTM per node
-        lstm_out, _ = self.lstm(x_seq)  # [n_lsoa, T, lstm_hidden]
-        x = lstm_out[:, -1, :]          # Take the last time step as the semantic evolution feature [n_lsoa, lstm_hidden]
+        # Temporal encoding per node via LSTM
+        lstm_out, _ = self.lstm(x_seq)          # [n_lsoa, T, lstm_hidden]
+        x = lstm_out[:, -1, :]                  # Last time step as temporal-semantic feature
 
-        # GCN over spatial structure
+        # First GCN + BN + ReLU
         x = self.gcn1(x, edge_index, edge_weight)
+        x = self.bn1(x)
         x = F.relu(x)
-        x = self.gcn2(x, edge_index, edge_weight)
-        
-        # Classifier
+
+        # Second GCN + BN (Residual connection)
+        x_res = self.gcn2(x, edge_index, edge_weight)
+        x_res = self.bn2(x_res)
+        x = x + x_res  # residual connection
+
+        # Predict
         return self.classifier(x)
