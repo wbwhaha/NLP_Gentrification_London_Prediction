@@ -6,4 +6,4 @@ This project explores whether patterns in housing or architectural design, as re
   
 The first stage uses `Natural Language Processing` (`NLP`) with transformer models (`BERTopic` structure) to extract features from free-text planning application descriptions provided by the **Greater London Authority** (**GLA**). 
   
-The second stage predicts gentrification levels using `GCN`, `LSTM`, or `Transformer` (**feature suggestion**) models, combining extracted features with external datasets (**census data**) across **LSOAs**.
+The second stage predicts gentrification levels using `GCN`, `LSTM`, or `Transformer` (**future suggestion**) models, combining extracted features with external datasets (**census data**) across **LSOAs**.
