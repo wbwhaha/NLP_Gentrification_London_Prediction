@@ -25,9 +25,9 @@ class GentrificationGCN_LSTM(nn.Module):
         self.classifier = nn.Sequential(
             nn.ReLU(),
             nn.Dropout(dropout_rate),
-            nn.Linear(gcn_hidden, gcn_hidden),
+            nn.Linear(gcn_hidden, gcn_hidden // 2),
             nn.ReLU(),
-            nn.Linear(gcn_hidden, num_classes)
+            nn.Linear(gcn_hidden // 2, num_classes)
         )
 
     def forward(self, x_seq, edge_index, edge_weight):
